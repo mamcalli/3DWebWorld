@@ -1,0 +1,113 @@
+<!-- 3D-webtoon-cat.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>purthagoras</title>
+  </head>
+  <div class="header">
+    <h1>pythagoras/purthagoras</h1>
+  </div> 
+  <body onload="main()">
+    <canvas id="webgl" width="600" height="600">
+    Please use a browser that supports "canvas"
+    </canvas>
+    <br><br>
+    <p>
+      freefall
+      <button type="button" id="walkOn">on</button>
+      <button type="button" id="walkOff">off</button>
+      &emsp;drip
+      <button type="button" id="toggleDrip">toggle</button>
+    </p>
+    Ears <input type="range" min="-45" max="45" value="0" class="slider" id="earSlide">
+    Animation: 
+    <button type="button" id="earsOn">on</button>
+    <button type="button" id="earsOff">off</button>
+    <p>
+      <p id = "fps"> XXX </p>
+    </p>
+      Camera Angle X <input type="range" min="-230" max="360" value="0" class="slider" id="angleSlide">
+      <br>
+    </p>
+    <p>
+      Head <input type="range" min="-45" max="90" value="0" class="slider" id="headSlide">
+      Animation: 
+      <button type="button" id="headOn">on</button>
+      <button type="button" id="headOff">off</button>
+      <br>
+      Body <input type="range" min="-90" max="90" value="0" class="slider" id="bodySlide">
+    </p>
+    <p>
+      Left Shoulder <input type="range" min="-90" max="90" value="0" class="slider" id="rShoulderSlide">
+      Animation: 
+      <button type="button" id="animationRShoulderOn">on</button>
+      <button type="button" id="animationRShoulderOff">off</button>
+      <br>
+      Left Arm <input type="range" min="-20" max="45" value="0" class="slider" id="rArmSlide">
+      Animation: 
+      <button type="button" id="animationRArmOn">on</button>
+      <button type="button" id="animationRArmOff">off</button>
+    </p>
+    <p>
+      Right Shoulder <input type="range" min="-90" max="90" value="0" class="slider" id="lShoulderSlide">
+      Animation: 
+      <button type="button" id="animationLShoulderOn">on</button>
+      <button type="button" id="animationLShoulderOff">off</button>
+      <br>
+      Right Arm <input type="range" min="-20" max="45" value="0" class="slider" id="lArmSlide">
+      Animation: 
+      <button type="button" id="animationLArmOn">on</button>
+      <button type="button" id="animationLArmOff">off</button>
+    </p>
+    <p>
+      Left Upper Leg <input type="range" min="-90" max="90" value="0" class="slider" id="rLegSlide">
+      Animation: 
+      <button type="button" id="animationRLegOn">on</button>
+      <button type="button" id="animationRLegOff">off</button>
+      <br>
+      Left Lower Leg <input type="range" min="-90" max="90" value="0" class="slider" id="lLowLegSlide">
+      Animation: 
+      <button type="button" id="lLowLegOn">on</button>
+      <button type="button" id="lLowLegOff">off</button>
+      <br>
+      Left Foot <input type="range" min="-90" max="90" value="0" class="slider" id="lFootSlide">
+      Animation: 
+      <button type="button" id="lFootOn">on</button>
+      <button type="button" id="lFootOff">off</button>
+    </p>
+    <p>
+      Right Upper Leg <input type="range" min="-90" max="90" value="0" class="slider" id="lLegSlide">
+      Animation: 
+      <button type="button" id="animationLLegOn">on</button>
+      <button type="button" id="animationLLegOff">off</button>
+      <br>
+      Right Lower Leg <input type="range" min="-90" max="90" value="0" class="slider" id="rLowLegSlide">
+      Animation: 
+      <button type="button" id="rLowLegOn">on</button>
+      <button type="button" id="rLowLegOff">off</button>
+      <br>
+      Right Foot <input type="range" min="-90" max="90" value="0" class="slider" id="rFootSlide">
+      Animation: 
+      <button type="button" id="rFootOn">on</button>
+      <button type="button" id="rFootOff">off</button>
+    </p>
+
+    <br><br>
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Star.js"></script>
+    <script src="3D-webtoon-cat.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
+    <script src="Cone.js"></script>
+    <script src="Cylinder.js"></script>
+    
+    <br>
+  </body>
+</html>
