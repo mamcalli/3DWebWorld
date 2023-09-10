@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>bush maze</title>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="600" height="600">
+    Please use a browser that supports "canvas"
+    </canvas>
+    <br><br>
+    <p>
+      <p id = "fps"> XXX </p>
+    </p>
+    </p>
+    Mouse Rotation<button type="button" id="toggleMouse">toggle</button>
+    </p>
+    <p>
+      -use wasd to move
+      -q, e pans left & right
+      -mouse controls where you look<br>
+      leaving it at the left or right edge will continue to look further in that direction
+      <br>-mouse rotation can be turned off with the button
+      <br>-right click to place block, left click to remove (left click can be buggy on chrome)
+    </p>
+
+    <br><br>
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Star.js"></script>
+    <script src="world.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
+    <script src="Cone.js"></script>
+    <script src="Cylinder.js"></script>
+    <script src="Camera.js"></script>
+    <script src="map.js"></script>
+    <script src="OBJViewer.js"></script>
+
+
+
+
+    
+    <br>
+  </body>
+</html>
