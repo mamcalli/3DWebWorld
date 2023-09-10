@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>asgn5</title>
+    <style>
+    html, body {
+        margin: 0;
+        height: 100%;
+    }
+    #c {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    </style>
+  </head>
+  <body>
+    <canvas id="c" data-engine="three.js r147" style="touch-action: none;" width="1054" height="581"></canvas>
+    <!-- <div class="split">
+      <div id="view1" tabindex="1"></div>
+      <div id="view2" tabindex="2"></div>
+   </div> -->
+
+
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./build/three.module.js",
+    "three/addons/": "./addons/"
+  }
+}
+</script>
+
+<script type="module">
+  // Code from Threejs.org manuals
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
+import {MTLLoader} from 'three/addons/loaders/MTLLoader.js';
+
+function main() {
+  const canvas = document.querySelector('#c');
+  const renderer = new THREE.WebGLRenderer({canvas});
+  renderer.shadowMap.enabled=true;
+  //renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const rtWidth = 512;
+  const rtHeight = 512;
+  const renderTarget = new THREE.WebGLRenderTarget(rtWidth, rtHeight);
+
+  const rtFov = 75;
+  const rtAspect = rtWidth / rtHeight;
+  const rtNear = 0.1;
+  const rtFar = 5;
+  const rtCamera = new THREE.PerspectiveCamera(rtFov, rtAspect, rtNear, rtFar);
+  rtCamera.position.z = 2;
+
+  const rtScene = new THREE.Scene();
+  rtScene.background = new THREE.Color(0x808587);
+
+  {
+    const color = 0xFFFFFF;
+    const intensity = 1;
+    const light = new THREE.DirectionalLight(color, intensity);
+    light.position.set(-1, 2, 4);
+    rtScene.add(light);
+  }
+
+  const fov = 75;
+  const aspect = 2;  //canvas default
+  const near = 0.1;
+  const far = 100;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.set(0, 20, 30);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.target.set(0, 5, 0);
+  controls.update();
+
+  // 2nd camera implemantion adapted from the following: https://www.youtube.com/watch?v=_TtVdWAc9Sc
+
+  const camera2 = new THREE.PerspectiveCamera(90, aspect, near, far);
+  camera2.position.set(0,20,0);
+  camera2.lookAt(0,0,-10);
+
+  const scene = new THREE.Scene();
+  scene.add(camera);
+
+  camera.add(camera2);
+
+  {
+    const color = 0x6f8dad;
+    //const color = 0xFFFFFF;
+    const density = 0.03;
+    scene.fog = new THREE.FogExp2(color, density);
+    //scene.fog = new THREE.Fog(color, 0.5, 55);
+  }
+  {
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load(
+      'textures/sky.jpg',
+      () => {
+        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        rt.fromEquirectangularTexture(renderer, texture);
+        scene.background = rt.texture;
+      });
+  }
+
+  {
+    const planeSize = 50;
+
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('./textures/asphalt_3.jpg');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.NearestFilter;
+    const repeats = planeSize / 2;
+    texture.repeat.set(repeats, repeats);
+
+    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+    const planeMat = new THREE.MeshPhongMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.Mesh(planeGeo, planeMat);
+    mesh.recieveShadow = true;
+    mesh.rotation.x = Math.PI * -.5;
+    scene.add(mesh);
+  }
+
+  // HEMISPHERE LIGHT
+  {
+    const skyColor = 0x709899;  // blue grey
+    const groundColor = 0x4b4d49;  // muddy grey
+    const intensity = 1;
+    const light = new THREE.HemisphereLight(skyColor, groundColor, intensity);
+    scene.add(light);
+  }
+
+  // DIRECTIONAL LIGHT
+  {
+    const color = 0xFFFFFF;
+    const intensity = 1;
+    const light = new THREE.DirectionalLight(color, intensity);
+    light.position.set(0, 10, 0);
+    light.target.position.set(-5, 0, 0);
+    scene.add(light);
+    scene.add(light.target);
+  }
+
+  //POINTLIGHT
+  {
+    const color = 0xf4ffa3;
+    const intensity = 1;
+    const light = new THREE.PointLight(color, intensity);
+    light.position.set(0, 7.69, -13.333);
+    light.scale.set(1.5,1.5,1.5);
+    scene.add(light);
+  }
+
+
+ // make primitive object
+  function makePrim(geometry, color, pos, scale) {
+      const material = new THREE.MeshPhongMaterial({color});
+
+      const primitive = new THREE.Mesh(geometry, material);
+      primitive.castShadow = true;
+      primitive.receiveShadow = true;
+      scene.add(primitive);
+      primitive.scale.set(...scale);
+      primitive.position.set(...pos);
+      
+      //cube.position.x = 5;
+
+      return primitive;
+  }
+
+  // make primitive object w. texture
+  function makeTexturePrim(geometry, text, pos, scale) {
+    const loader = new THREE.TextureLoader();
+    
+    loader.load(text, (texture) => {
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+      });
+      const shape = new THREE.Mesh(geometry, material);
+      shape.position.set(...pos);
+      shape.scale.set(...scale);
+      shape.castShadow = true;
+      shape.receiveShadow = true;
+      scene.add(shape);
+      cubes.push(shape);
+    });
+  }
+
+  // for render texture
+  function rtMakeInstance(geometry, color, x) {
+    const material = new THREE.MeshPhongMaterial({color});
+
+    const cube = new THREE.Mesh(geometry, material);
+    cube.scale.set(0.5,0.5,0.5);
+    rtScene.add(cube);
+
+    cube.position.x = x;
+
+    return cube;
+  }
+
+  const cube_obj = new THREE.BoxGeometry(1,1,1);
+  const octa = new THREE.OctahedronGeometry(7);
+  const cylinder = new THREE.CylinderGeometry(2,3,16,12);
+
+  // heart shape from threejs manual
+  const shape = new THREE.Shape();
+  const x = -2.5;
+  const y = -5;
+  shape.moveTo(x + 2.5, y + 2.5);
+  shape.bezierCurveTo(x + 2.5, y + 2.5, x + 2, y, x, y);
+  shape.bezierCurveTo(x - 3, y, x - 3, y + 3.5, x - 3, y + 3.5);
+  shape.bezierCurveTo(x - 3, y + 5.5, x - 1.5, y + 7.7, x + 2.5, y + 9.5);
+  shape.bezierCurveTo(x + 6, y + 7.7, x + 8, y + 4.5, x + 8, y + 3.5);
+  shape.bezierCurveTo(x + 8, y + 3.5, x + 8, y, x + 5, y);
+  shape.bezierCurveTo(x + 3.5, y, x + 2.5, y + 2.5, x + 2.5, y + 2.5);
+
+  const extrudeSettings = {
+    steps: 2,  // ui: steps
+    depth: 2,  // ui: depth
+    bevelEnabled: true,  // ui: bevelEnabled
+    bevelThickness: 1,  // ui: bevelThickness
+    bevelSize: 1,  // ui: bevelSize
+    bevelSegments: 2,  // ui: bevelSegments
+  };
+  const heart = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+  const cubes = [
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10,5.49,0], [4,11,5]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 6.49, 5.5], [4,13,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 5.99, 10.5], [4, 12,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 5.14, 15.5], [4,10.3,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 4.14, -5.5], [4,8.3,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 4.99, -10.5], [4,10,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [10, 5.99, -15.5], [4,12,4]),
+
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10,4.49,0], [4,9,5]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 5.49, 5.5], [4,11,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 3.99, 10.5], [4,8,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 5.14, 15.5], [4,10.3,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 6.99, -5.5], [4,14,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 6.499, -10.5], [4,13,4]),
+    makeTexturePrim(cube_obj, 'textures/concrete-1.jpg', [-10, 7.69, -15.5], [4,15.4,4]),
+    makePrim(cylinder, 0x808080, [16, 7.99, -15], [1, 1, 1]),
+    makePrim(cylinder, 0x808080, [16, 7.99, 15], [1, 1, 1]),
+    makePrim(cylinder, 0x808080, [-16, 7.99, -15], [1, 1, 1]),
+    makePrim(cylinder, 0x808080, [-16, 7.99, 15], [1, 1, 1]),
+  ];
+
+  const anim_objs = [
+    //makePrim(octa, 0xc9ff5e, [0, 7.69, -13.333], [.8,.8,.8]),
+    makePrim(heart, 0xff5d52, [0, 8, 10], [.7, .7, .7]),
+  ];
+
+  const rtCubes = [
+    rtMakeInstance(cube_obj, 0x44aa88,  0),
+    rtMakeInstance(cube_obj, 0x8844aa,  1),
+    rtMakeInstance(cube_obj, 0xaa8844,  -1),
+  ];
+  
+  const rt_mat = new THREE.MeshPhongMaterial({map: renderTarget.texture,})
+  const rt_octa = new THREE.Mesh(octa, rt_mat);
+  rt_octa.position.set(0, 8, -13);
+  rt_octa.scale.set(.8,.8,.8);
+  scene.add(rt_octa);
+
+  //LOAD OBJ AND MTL 
+  // from threejs manual
+  function makeObj(obj_file, mtl_file, pos){
+    const objLoader = new OBJLoader();
+    const mtlLoader = new MTLLoader();
+    mtlLoader.load(mtl_file, (mtl) => {
+      mtl.preload();
+      objLoader.setMaterials(mtl);
+
+      objLoader.load(obj_file, (root) => {
+        root.position.set(pos[0],pos[1],pos[2]);
+        root.scale.set(1.5,1.5,1.5);
+        scene.add(root);
+
+        const box = new THREE.Box3().setFromObject(root);
+        const boxSize = box.getSize(new THREE.Vector3()).length();
+        const boxCenter = box.getCenter(new THREE.Vector3());
+        console.log('size', boxSize);
+        console.log('center', boxCenter);
+      });
+    });
+  }
+
+  const objs = [
+    makeObj('./objs/powerline.obj','./objs/powerline.mtl', [5,0,0]),
+    makeObj('./objs/powerline.obj','./objs/powerline.mtl', [5,0,17]),
+    
+    makeObj('./objs/powerline.obj','./objs/powerline.mtl', [-5,0,0]),
+    makeObj('./objs/powerline.obj','./objs/powerline.mtl', [-5,0,17]),
+    //makeObj('./objs/gas_station/gas_station.obj','./objs/gas_station/gas_station.mtl', [0,0,0]),
+  ];
+
+  function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
+  function render(time) {
+    time *= 0.001;
+
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+
+    rt_octa.rotation.x = time;
+    rt_octa.rotation.y = time * 1.1;
+
+    anim_objs.forEach((shapes, ndx) => {
+      const speed = 1 + ndx * .1;
+      const rot = time * speed;
+      shapes.rotation.x = rot;
+      shapes.rotation.z = rot;
+    });
+
+    rtCubes.forEach((cube, ndx) => {
+      const speed = 1 + ndx * .1;
+      const rot = time * speed;
+      cube.rotation.x = rot;
+      cube.rotation.y = rot;
+    });
+
+    // draw render target scene to render target
+    renderer.setRenderTarget(renderTarget);
+    renderer.render(rtScene, rtCamera);
+    //renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    renderer.setViewport(0,0,canvas.clientWidth,canvas.clientHeight);
+    renderer.render(scene, camera);
+
+    renderer.clearDepth();
+    renderer.setScissorTest(true);
+
+    renderer.setScissor(canvas.clientWidth-350,canvas.clientHeight-256,canvas.clientWidth-16,canvas.clientHeight-16);
+
+    renderer.setViewport(512,125,canvas.clientWidth-16,canvas.clientHeight-16);
+    
+    renderer.render(scene,camera2);
+    renderer.setScissorTest(false);
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+  
+}
+
+
+main();
+</script>
+
+</body><!-- Import maps polyfill --><!-- Remove this when import maps will be widely supported --></html>
